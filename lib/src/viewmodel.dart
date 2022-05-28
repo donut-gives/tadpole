@@ -1,7 +1,6 @@
 import 'dart:math';
-import 'package:flutter/foundation.dart';
 
-import 'viewmodel_mixins.dart';
+import 'package:flutter/foundation.dart';
 
 part 'viewmodel_module.dart';
 

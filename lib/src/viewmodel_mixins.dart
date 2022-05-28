@@ -1,24 +1,19 @@
-import 'package:flutter/widgets.dart';
+import 'package:viewmodel/src/viewmodel_exceptions.dart';
 
 import 'viewmodel.dart';
+import 'package:flutter/widgets.dart';
 
 T? _findViewModel<T extends ViewModel>(BuildContext context) {
   T? viewModel;
   // Checks for ViewModel in ancestral ViewModelMixins
-  ViewModelMixin<T>? viewModelMixin = context.findAncestorStateOfType<ViewModelMixin<T>>();
-  viewModel = viewModelMixin?.viewModel;
-  // Checks for ViewModel in ancestral MultiViewModelMixins
-  if (viewModel == null) {
-    MultiViewModelMixin? multiViewModelMixin = context.findAncestorStateOfType<MultiViewModelMixin>();
-    viewModel = multiViewModelMixin?.getViewModel<T>();
-  }
+  ViewModelMixin? viewModelMixin = context.findAncestorStateOfType<ViewModelMixin>();
+  viewModel = viewModelMixin?.getViewModel<T>();
   return viewModel;
 }
 
-
 /// Used to find [ViewModel] in ancestral [StatefulWidget]
-/// 
-/// Example: 
+///
+/// Example:
 /// class Screen extends StatelessWidget with ViewModelProviderMixin{
 ///   @override
 ///   void build(BuildContext context){
@@ -28,54 +23,58 @@ T? _findViewModel<T extends ViewModel>(BuildContext context) {
 ///   }
 /// }
 mixin ViewModelProviderMixin on Widget {
-  T getViewModel<T>(BuildContext context){
-    T? viewModel = _findViewModel(context);
-    if(viewModel==null){
-      throw 'ViewModel not found';
-    }
-    return viewModel;
-  }
-}
-
-/// Used to register single [ViewModel] in a [State]
-/// call [registerViewModel] inside [initState]
-mixin ViewModelMixin<T extends ViewModel> on State {
-  late final String _viewModelIdentifier;
-
-  void registerViewModel(T viewModel){
-    if(_findViewModel<T>(context)!=null){
-      throw 'ViewModel already registered in an ancestor state';
-    }
-    _viewModelIdentifier = ViewModelModule.registerViewModels([viewModel]).first;
-  }
-
-  T get viewModel {
+  T getViewModel<T extends ViewModel>(BuildContext context) {
     T? viewModel = _findViewModel<T>(context);
-    viewModel ??= ViewModelModule.getViewModel<T>(_viewModelIdentifier);
+    if(viewModel==null){
+      throw ViewModelNotFound(T.toString());
+    }
     return viewModel;
   }
-
-  @override
-  void dispose() {
-    ViewModelModule.destroyViewModels([_viewModelIdentifier]);
-    super.dispose();
-  }
-
 }
 
-/// Used to register multiple [ViewModel]s in a [State]
-/// call [registerViewModels] inside [initState]
-mixin MultiViewModelMixin on State{
 
-  late final List<String> _viewModelIdentifiers;
+/// Used to register [ViewModel]/s or shared [ViewModel]/s in a [State]
+/// call [registerViewModel] inside [initState]
+mixin ViewModelMixin<K extends StatefulWidget> on State<K> {
+  late final List<String> _viewModelIdentifiers = [];
+  late final Map<String, String> _sharedViewModelKeysAndIdentifiers = {};
 
-  void registerViewModels(Iterable<ViewModel> viewModels){
-    _viewModelIdentifiers = ViewModelModule.registerViewModels(viewModels);
+
+  /// Registers [ViewModel] with the route
+  /// It will throw [ViewModelAlreadyRegistered] exception
+  /// if the ViewModel is already registered in the route
+  void registerViewModel<T extends ViewModel>({required T Function() create}){
+    if(_findViewModel<T>(context)!=null){
+      throw ViewModelAlreadyRegistered(T.toString());
+    }
+    T viewModel = create();
+    String id = ViewModelModule.registerViewModel(viewModel);
+    _viewModelIdentifiers.add(id);
   }
 
+  /// Registers [ViewModel] with the route.
+  /// If a [ViewModel] with same key is present in the application,
+  /// this function does not create the [ViewModel]
+  /// but registers the already registered instance with same key.
+  /// This way we can share a [ViewModel] across different routes.
+  /// It will throw [ViewModelAlreadyRegistered] exception
+  /// if the ViewModel is already registered in the route
+  void registerSharedViewModel<T extends ViewModel>({required String key, required T Function() createIfNull}){
+    if(_findViewModel<T>(context)!=null){
+      throw ViewModelAlreadyRegistered(T.toString());
+    }
+    T? viewModel = ViewModelModule.getViewModelFromKey<T>(key);
+    viewModel ??= createIfNull();
+    String id = ViewModelModule.registerViewModel(viewModel, key);
+    _viewModelIdentifiers.add(id);
+    _sharedViewModelKeysAndIdentifiers.addAll({key: id});
+  }
+
+  /// Finds and returns the [ViewModel] from a route.
+  /// It will throw [ViewModelNotFound] exception
+  /// if the [ViewModel] is not registered in the route.
   T getViewModel<T extends ViewModel>() {
     T? viewModel = _findViewModel<T>(context);
-    // Checks for ViewModel in current MultiViewModelMixin
     if(viewModel==null) {
       for (String viewModelIdentifier in _viewModelIdentifiers) {
         final vm = ViewModelModule.getViewModel(viewModelIdentifier);
@@ -84,17 +83,17 @@ mixin MultiViewModelMixin on State{
         }
       }
     }
-
     if(viewModel==null) {
-      throw 'ViewModel getter called without adding ViewModel first';
+      throw ViewModelNotFound(T.toString());
     }
     return viewModel;
   }
 
-
   @override
   void dispose() {
-    ViewModelModule.destroyViewModels(_viewModelIdentifiers);
+    ViewModelModule.destroyViewModels(_viewModelIdentifiers, _sharedViewModelKeysAndIdentifiers);
+    _viewModelIdentifiers.clear();
     super.dispose();
   }
+
 }
