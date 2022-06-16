@@ -4,7 +4,7 @@ part of 'viewmodel.dart';
 class ViewModelModule {
   ViewModelModule._();
 
-  /// Stores all [ViewModel] registered with a [ViewModelMixin] or [MultiViewModelMixin]
+  /// Stores all [ViewModel] registered with a [ViewModelMixin]
   static final Map<String, ViewModel> _viewModels = {};
 
   /// Stores shared [ViewModel]'s key and their identifiers
@@ -26,14 +26,8 @@ class ViewModelModule {
     return viewModelIdentifier;
   }
 
-  /// Function to access the [ViewModel] registered by a [ViewModelMixin] or [MultiViewModelMixin]
-  static ViewModel getViewModel(String viewModelIdentifier){
-    final viewModel = _viewModels[viewModelIdentifier];
-    if(viewModel==null){
-      throw 'ViewModel getter called without adding ViewModel first';
-    }
-    return viewModel;
-  }
+  /// Function to access the [ViewModel] registered by a [ViewModelMixin]
+  static ViewModel? getViewModel(String viewModelIdentifier) => _viewModels[viewModelIdentifier];
 
   /// Function to destroy [ViewModel] when the owner widget of the [ViewModel] disposes
   static destroyViewModels(Iterable<String> viewModelIdentifiers, [Map<String, String>? keyAndIdPairs]){

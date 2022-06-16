@@ -1,5 +1,4 @@
-import 'package:viewmodel/src/viewmodel_exceptions.dart';
-
+import 'viewmodel_exceptions.dart';
 import 'viewmodel.dart';
 import 'package:flutter/widgets.dart';
 
@@ -7,7 +6,7 @@ T? _findViewModel<T extends ViewModel>(BuildContext context) {
   T? viewModel;
   // Checks for ViewModel in ancestral ViewModelMixins
   ViewModelMixin? viewModelMixin = context.findAncestorStateOfType<ViewModelMixin>();
-  viewModel = viewModelMixin?.getViewModel<T>();
+  viewModel = viewModelMixin?.getViewModelOrNull<T>();
   return viewModel;
 }
 
@@ -71,9 +70,9 @@ mixin ViewModelMixin<K extends StatefulWidget> on State<K> {
   }
 
   /// Finds and returns the [ViewModel] from a route.
-  /// It will throw [ViewModelNotFound] exception
+  /// It will return null if no [ViewModel] is present.
   /// if the [ViewModel] is not registered in the route.
-  T getViewModel<T extends ViewModel>() {
+  T? getViewModelOrNull<T extends ViewModel>(){
     T? viewModel = _findViewModel<T>(context);
     if(viewModel==null) {
       for (String viewModelIdentifier in _viewModelIdentifiers) {
@@ -83,8 +82,16 @@ mixin ViewModelMixin<K extends StatefulWidget> on State<K> {
         }
       }
     }
-    if(viewModel==null) {
-      throw ViewModelNotFound(T.toString());
+    return viewModel;
+  }
+
+  /// Finds and returns the [ViewModel] from a route.
+  /// It will throw [ViewModelNotFound] exception
+  /// if the [ViewModel] is not registered in the route.
+  T getViewModel<T extends ViewModel>() {
+    T? viewModel = getViewModelOrNull();
+    if(viewModel==null){
+      throw ViewModelNotFound('$T');
     }
     return viewModel;
   }
