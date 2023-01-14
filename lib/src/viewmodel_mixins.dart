@@ -5,7 +5,7 @@ import 'package:flutter/widgets.dart';
 T? _findViewModel<T extends ViewModel>(BuildContext context) {
   T? viewModel;
   // Checks for ViewModel in ancestral ViewModelMixins
-  ViewModelMixin? viewModelMixin = context.findAncestorStateOfType<ViewModelMixin>();
+  ViewModelRegisterMixin? viewModelMixin = context.findAncestorStateOfType<ViewModelRegisterMixin>();
   viewModel = viewModelMixin?.getViewModelOrNull<T>();
   return viewModel;
 }
@@ -22,19 +22,26 @@ T? _findViewModel<T extends ViewModel>(BuildContext context) {
 ///   }
 /// }
 mixin ViewModelProviderMixin on Widget {
+  final _cache = {};
+
   T getViewModel<T extends ViewModel>(BuildContext context) {
-    T? viewModel = _findViewModel<T>(context);
-    if(viewModel==null){
-      throw ViewModelNotFound(T.toString());
+    if (_cache[T.toString()]) {
+      T? viewModel = _findViewModel<T>(context);
+      if (viewModel == null) {
+        throw ViewModelNotFound(T.toString());
+      }
+      _cache.addAll({T.toString(): viewModel});
+      return viewModel;
+    } else {
+      return _cache[T.toString()];
     }
-    return viewModel;
   }
 }
 
 
 /// Used to register [ViewModel]/s or shared [ViewModel]/s in a [State]
 /// call [registerViewModel] inside [initState]
-mixin ViewModelMixin<K extends StatefulWidget> on State<K> {
+mixin ViewModelRegisterMixin<K extends StatefulWidget> on State<K> {
   late final List<String> _viewModelIdentifiers = [];
   late final Map<String, String> _sharedViewModelKeysAndIdentifiers = {};
 

@@ -7,5 +7,7 @@ abstract class ViewModel {
   @protected
   int registerCount = 0;
 
+  void init();
+
   void destroy();
 }
