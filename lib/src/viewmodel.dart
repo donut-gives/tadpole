@@ -1,7 +1,5 @@
-import 'dart:math';
 import 'package:flutter/foundation.dart';
-
-part 'viewmodel_module.dart';
+part 'shared_repository.dart';
 
 abstract class ViewModel {
   @protected
