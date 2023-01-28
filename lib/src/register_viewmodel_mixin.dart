@@ -4,7 +4,6 @@ part of 'context_utils.dart';
 /// call [register] inside [initState]
 mixin RegisterViewModelMixin<T extends StatefulWidget> on State<T> {
   final Set<ViewModel> _viewModels = {};
-  final Set<String> _keys = {};
 
   /// Registers [ViewModel] with the route
   /// It will throw [ViewModelAlreadyRegistered] exception
@@ -18,34 +17,24 @@ mixin RegisterViewModelMixin<T extends StatefulWidget> on State<T> {
     _viewModels.add(factory()..init());
   }
 
-  /// Registers [ViewModel] with the route.
-  /// If a [ViewModel] is stored with the same key in the application,
-  /// this function does not create a new [ViewModel]
-  /// but registers the already registered instance with same key.
-  /// This way we can share a [ViewModel] across different routes.
-  /// It will throw [ViewModelAlreadyRegistered] exception
-  /// if the ViewModel is already registered in the route
-  void registerShared<K extends ViewModel>({required String key, required K Function() factory}){
-    K? viewModel = _findViewModelInAncestor(context);
-    if (viewModel != null) {
-      throw ViewModelAlreadyRegistered(K);
-    }
-    viewModel = SharedRepository.claimViewModel(key, factory) as K;
-    _viewModels.add(viewModel);
-  }
-
 
   /// Finds and returns the [ViewModel] from a route.
   /// It will return null if no [ViewModel] is present.
   /// if the [ViewModel] is not registered in the route.
-  K? getViewModel<K extends ViewModel>(){
+  K getViewModel<K extends ViewModel>([String? key]){
+    if (key != null) {
+      K? viewModel = SharedViewModelRepository.requestViewModel<K>(key);
+      if (viewModel != null) {
+        return viewModel;
+      }
+    }
     K? viewModel = _findViewModelInAncestor(context);
     if (viewModel == null) {
       try {
         viewModel =
         _viewModels.firstWhere((element) => element is K) as K;
       } catch (e) {
-        return null;
+        throw ViewModelNotFound(K);
       }
     }
     return viewModel;
@@ -53,15 +42,7 @@ mixin RegisterViewModelMixin<T extends StatefulWidget> on State<T> {
 
   @override
   void dispose() {
-    List<ViewModel> vms = List.empty(growable: true);
-    for (String key in _keys) {
-      ViewModel? vm = SharedRepository.disclaim(key);
-      if (vm != null) {
-        vms.add(vm);
-      }
-    }
     for (ViewModel viewModel in _viewModels) {
-      if (vms.contains(viewModel)) continue;
       viewModel.destroy();
     }
     super.dispose();

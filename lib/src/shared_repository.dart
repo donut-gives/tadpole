@@ -1,18 +1,21 @@
 part of 'viewmodel.dart';
 
-class SharedRepository {
-  SharedRepository._();
+class SharedViewModelRepository {
+  SharedViewModelRepository._();
 
   static final Map<String, ViewModel> _viewModels = {};
 
 
-  static ViewModel? requestViewModel(String key) {
+  static K? requestViewModel<K extends ViewModel>(String key) {
    ViewModel? viewModel = _viewModels[key];
+   if (viewModel is! K) {
+     return null;
+   }
    return viewModel;
   }
 
-  static ViewModel claimViewModel(String key, ViewModel Function() factory) {
-    ViewModel? vm = requestViewModel(key);
+  static K claimViewModel<K extends ViewModel>(String key, K Function() factory) {
+    K? vm = requestViewModel<K>(key);
     if (vm == null) {
       vm = factory()..init();
       _viewModels.addAll({key: vm});
@@ -21,8 +24,8 @@ class SharedRepository {
     return vm;
   }
 
-  static ViewModel? disclaim(String key) {
-    ViewModel? vm = requestViewModel(key);
+  static K? disclaim<K extends ViewModel>(String key) {
+    K? vm = requestViewModel<K>(key);
     if (vm != null) {
       vm.registerCount--;
       if (vm.registerCount==0) {
