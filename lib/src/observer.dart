@@ -3,11 +3,11 @@ import 'package:viumodel/src/lifecycle.dart';
 import 'package:viumodel/src/live_notifier.dart';
 
 class Observer<L> extends StatefulWidget {
-  const Observer({Key? key, required this.child, required this.builder, required this.liveNotifier}) : super(key: key);
+  const Observer({Key? key, this.child, required this.builder, required this.liveNotifier}) : super(key: key);
 
   final LiveNotifier<L> liveNotifier;
-  final Function(BuildContext context, L value, Widget child) builder;
-  final Widget child;
+  final Function(BuildContext context, L value, Widget? child) builder;
+  final Widget? child;
 
   @override
   State<Observer> createState() => _ObserverState();
