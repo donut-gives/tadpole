@@ -15,7 +15,7 @@ mixin RegisterViewModelMixin<T extends StatefulWidget> on State<T> {
     if (viewModel != null) {
       throw ViewModelAlreadyRegistered(K);
     }
-    _viewModels.add(factory());
+    _viewModels.add(factory()..init());
   }
 
   /// Registers [ViewModel] with the route.

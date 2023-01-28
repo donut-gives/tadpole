@@ -14,7 +14,7 @@ class SharedRepository {
   static ViewModel claimViewModel(String key, ViewModel Function() factory) {
     ViewModel? vm = requestViewModel(key);
     if (vm == null) {
-      vm = factory();
+      vm = factory()..init();
       _viewModels.addAll({key: vm});
     }
     vm.registerCount++;
