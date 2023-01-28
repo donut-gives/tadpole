@@ -2,7 +2,7 @@ part of 'context_utils.dart';
 
 /// Used to register [ViewModel]/s or shared [ViewModel]/s in a [State]
 /// call [register] inside [initState]
-mixin RegisterViewModelMixin<T extends StatefulWidget> on LifeCycleOwnerMixin {
+mixin RegisterViewModelMixin<T extends StatefulWidget> on State<T> {
   final Set<ViewModel> _viewModels = {};
   final Set<String> _keys = {};
 
