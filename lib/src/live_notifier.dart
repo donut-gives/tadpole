@@ -7,9 +7,10 @@ class LiveNotifier<T> extends ValueNotifier<T> {
   LiveNotifier(super.value);
 
   LifeCycle _state = LifeCycle.unborn;
+  /// Lifecycle state exposed for debug purpose only
   LifeCycle get state => _state;
 
-  observe(LifeCycleOwner lifeCycleOwner, Function() reaction){
+  observe(LifeCycleOwner lifeCycleOwner, Function() reaction, {Function()? cleanUp}){
     lifeCycleOwner.addListener(() {
       _state = lifeCycleOwner.value;
       switch(lifeCycleOwner.value) {
@@ -23,6 +24,7 @@ class LiveNotifier<T> extends ValueNotifier<T> {
           break;
         case LifeCycle.dead:
           removeListener(reaction);
+          cleanUp?.call();
           break;
       }
     });
