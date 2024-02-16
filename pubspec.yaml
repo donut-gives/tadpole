@@ -1,6 +1,6 @@
-name: viumodel
-description: ViewModel with destroyable property
-version: 1.2.0
+name: tadpole
+description: Flutter's Amphibian to link your data layer with the presenter layer with lifecycle aware properties
+version: 0.1.0
 homepage: https://github.com/orgdonut/viewmodel
 
 environment:

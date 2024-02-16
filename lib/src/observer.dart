@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
-import 'package:viumodel/src/lifecycle.dart';
-import 'package:viumodel/src/live_notifier.dart';
+import 'package:tadpole/src/lifecycle.dart';
+import 'package:tadpole/src/live_notifier.dart';
 
 class Observer<L> extends StatefulWidget {
   const Observer({Key? key, this.child, required this.builder, required this.liveNotifier}) : super(key: key);

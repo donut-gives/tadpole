@@ -1,7 +1,5 @@
-import 'package:viumodel/src/lifecycle.dart';
-
-import 'viewmodel_exceptions.dart';
-import 'viewmodel.dart';
+import 'package:tadpole/src/viewmodel_exceptions.dart';
+import 'package:tadpole/src/viewmodel.dart';
 import 'package:flutter/widgets.dart';
 
 part 'viewmodel_mixin.dart';

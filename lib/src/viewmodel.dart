@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:viumodel/src/lifecycle.dart';
+import 'package:tadpole/src/lifecycle.dart';
 
 abstract class ViewModel {
   final LifeCycleOwner _lifeCycleOwner = ValueNotifier(LifeCycle.unborn);
